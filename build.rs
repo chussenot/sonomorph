@@ -1,5 +1,7 @@
-//! Builds the chip8 engine (`engine/chip8/`, see its PROVENANCE.md) into a
-//! static library, with the `render` feature only.
+//! Builds the engines' C into static libraries:
+//! - `render`: the chip8 engine (`engine/chip8/`, see its PROVENANCE.md);
+//! - `render-advanced`: the studio (`engine/advanced/`) with its vendored
+//!   FLAC decoder and QOA encoder (`engine/vendor/`).
 //!
 //! The flags are the ones BRYX built its renderer with (ISO C99, the POSIX
 //! feature macros, -O2), so a score renders to the same samples here as it
@@ -8,6 +10,8 @@
 fn main() {
     #[cfg(feature = "render")]
     build_chip8();
+    #[cfg(feature = "render-advanced")]
+    build_studio();
 }
 
 #[cfg(feature = "render")]
@@ -41,6 +45,42 @@ fn build_chip8() {
     build.compile("sonomorph_chip8");
 
     // The engine calls libm (sin, pow, tanh). MSVC's runtime has them.
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    if target_os != "windows" {
+        println!("cargo:rustc-link-lib=m");
+    }
+}
+
+#[cfg(feature = "render-advanced")]
+fn build_studio() {
+    const SOURCES: &[&str] = &[
+        "studio.c",
+        "studio_common.c",
+        "studio_fx.c",
+        "studio_sampler.c",
+        "studio_synth.c",
+        "sonomorph_studio.c",
+    ];
+    println!("cargo:rerun-if-changed=engine/advanced");
+    println!("cargo:rerun-if-changed=engine/vendor");
+
+    let dir = std::path::Path::new("engine/advanced");
+    let mut build = cc::Build::new();
+    build
+        .include(dir)
+        .files(SOURCES.iter().map(|file| dir.join(file)))
+        // BRYX built its renderer at -O2; a studio render takes seconds even
+        // so, and it must render the same bytes here.
+        .opt_level(2)
+        .warnings(false);
+    if !build.get_compiler().is_like_msvc() {
+        build
+            .std("c99")
+            .define("_DEFAULT_SOURCE", None)
+            .define("_XOPEN_SOURCE", "600");
+    }
+    build.compile("sonomorph_studio");
+
     let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
     if target_os != "windows" {
         println!("cargo:rustc-link-lib=m");

@@ -25,8 +25,10 @@ mod output;
 #[cfg(feature = "render")]
 mod render;
 
+#[cfg(feature = "output")]
+pub use crate::device::OutputError;
 pub use mixer::{pan_gains, Command, Mixer, MixerConfig, Sound};
 #[cfg(feature = "output")]
-pub use output::{Output, OutputError};
+pub use output::Output;
 #[cfg(feature = "render")]
 pub use render::{render_file, RenderError};
