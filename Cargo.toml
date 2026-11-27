@@ -46,8 +46,11 @@ required-features = ["render"]
 name = "docs"
 required-features = ["render"]
 
-[[example]]
-name = "render_wav"
+[[bin]]
+# A command-line renderer, to audition a score or measure it from a script.
+# Built only with `render`, so a game that depends on the library never
+# builds it.
+name = "sonomorph-render"
 required-features = ["render"]
 
 [[example]]
