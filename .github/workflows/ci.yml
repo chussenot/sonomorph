@@ -30,10 +30,21 @@ jobs:
         run: cargo clippy --all-targets --features render -- -D warnings
       - name: cargo clippy (output)
         run: cargo clippy --all-targets --features output -- -D warnings
+      - name: cargo clippy (render-advanced)
+        run: cargo clippy --all-targets --features render-advanced -- -D warnings
       - name: cargo clippy (all features)
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: cargo test
         run: cargo test --all-features
+      # The studio's C modules have their own checks (PROVENANCE.md).
+      - name: studio C tests
+        working-directory: engine/advanced
+        run: |
+          set -e
+          cc -std=c99 -O2 -Wall -Wextra -Werror -o t tests/test_synth.c studio_synth.c studio_common.c -lm && ./t
+          cc -std=c99 -O2 -Wall -Wextra -Werror -o t tests/test_fx.c studio_fx.c studio_common.c -lm && ./t
+          cc -std=c99 -O2 -Wall -Wextra -Werror -o t tests/test_sampler.c studio_sampler.c studio_common.c -lm && ./t
+          rm -f t
       - name: cargo doc
         run: cargo doc --no-deps --all-features
         env:
