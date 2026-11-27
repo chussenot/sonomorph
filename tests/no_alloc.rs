@@ -5,23 +5,23 @@
 
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 use sonomorph::advanced;
 use sonomorph::chip8::{self, mulaw, Command};
 
-/// Counts allocator calls made on a thread while it is armed.
+/// Counts allocator calls made on a thread while it is armed. The count is
+/// the thread's own: tests run in parallel, and another test's allocations
+/// must not land in this one's count.
 struct Counting;
-
-static CALLS: AtomicUsize = AtomicUsize::new(0);
 
 thread_local! {
     static ARMED: Cell<bool> = const { Cell::new(false) };
+    static CALLS: Cell<usize> = const { Cell::new(0) };
 }
 
 fn note() {
     if ARMED.with(Cell::get) {
-        CALLS.fetch_add(1, Ordering::Relaxed);
+        CALLS.with(|c| c.set(c.get() + 1));
     }
 }
 
@@ -45,11 +45,11 @@ static ALLOCATOR: Counting = Counting;
 
 /// Allocator calls made by `f` on this thread.
 fn calls_in(f: impl FnOnce()) -> usize {
-    let before = CALLS.load(Ordering::Relaxed);
+    let before = CALLS.with(Cell::get);
     ARMED.with(|a| a.set(true));
     f();
     ARMED.with(|a| a.set(false));
-    CALLS.load(Ordering::Relaxed) - before
+    CALLS.with(Cell::get) - before
 }
 
 fn tone(secs: f32, hz: f32) -> &'static [u8] {

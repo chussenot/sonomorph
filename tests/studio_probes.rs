@@ -18,8 +18,10 @@ fn probe(name: &str) -> Vec<[f64; 2]> {
     let render = render_score(&path, Some(RATE as u32)).unwrap_or_else(|e| panic!("{name}: {e}"));
     render
         .frames()
-        .chunks_exact(2)
-        .map(|f| [f64::from(f[0]), f64::from(f[1])])
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|[l, r]| [f64::from(*l), f64::from(*r)])
         .collect()
 }
 

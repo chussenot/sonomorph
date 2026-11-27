@@ -15,8 +15,10 @@
 pub fn fold_effect(stereo: &[i16]) -> Vec<i16> {
     const TAPS: usize = 63;
     let mono: Vec<f64> = stereo
-        .chunks_exact(2)
-        .map(|lr| (f64::from(lr[0]) + f64::from(lr[1])) * 0.5)
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|[l, r]| (f64::from(*l) + f64::from(*r)) * 0.5)
         .collect();
     let cut = 0.225; // cycles per input sample
     let mid = (TAPS / 2) as f64;

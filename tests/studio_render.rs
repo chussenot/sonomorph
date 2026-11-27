@@ -110,11 +110,11 @@ fn qoa_and_16_bit_are_the_render_and_decode_back_to_it() {
     assert_eq!(stream.sample_rate(), 48_000);
     // QOA is lossy: decoded, it stays close to the 16-bit it encoded.
     let mut worst = 0i32;
-    for frame in s16.chunks_exact(2) {
+    for [want_l, want_r] in s16.as_chunks::<2>().0 {
         let [l, r] = stream.next_frame().unwrap();
         worst = worst
-            .max((i32::from(l) - i32::from(frame[0])).abs())
-            .max((i32::from(r) - i32::from(frame[1])).abs());
+            .max((i32::from(l) - i32::from(*want_l)).abs())
+            .max((i32::from(r) - i32::from(*want_r)).abs());
     }
     assert!(worst < 2_000, "QOA error {worst}");
     // Deterministic, dither included.
