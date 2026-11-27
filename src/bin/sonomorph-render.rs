@@ -1,9 +1,17 @@
-//! Renders an ABC score to a 16-bit mono WAV file, to audition a score
-//! without a game around it.
+//! `sonomorph-render`: renders an ABC score with the chip8 engine, to
+//! audition it without a game around it, or to measure it from a script.
 //!
 //! ```text
-//! cargo run --example render_wav --features render -- tests/probes/chord.abc chord.wav
-//! cargo run --example render_wav --features render -- song.abc song.wav 44100
+//! sonomorph-render <in.abc> <out.wav|out.s16> [sample_rate, default 22050]
+//! ```
+//!
+//! `.wav` writes a 16-bit mono WAV; any other extension writes the raw
+//! samples, signed 16-bit little-endian mono, with nothing around them (the
+//! interface of BRYX's old `audio/render.c`, which its `compose.py` calls).
+//!
+//! ```text
+//! cargo install --git https://github.com/chussenot/sonomorph --features render sonomorph-render
+//! cargo run --features render --bin sonomorph-render -- tests/probes/chord.abc chord.wav
 //! ```
 
 use std::io::Write;
@@ -26,11 +34,16 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    if let Err(err) = write_wav(output, rate, &samples) {
+    let written = if output.ends_with(".wav") {
+        write_wav(output, rate, &samples)
+    } else {
+        write_raw(output, &samples)
+    };
+    if let Err(err) = written {
         eprintln!("{output}: {err}");
         return ExitCode::FAILURE;
     }
-    println!(
+    eprintln!(
         "{output}: {} samples, {:.2} s at {rate} Hz",
         samples.len(),
         samples.len() as f64 / f64::from(rate)
@@ -39,7 +52,7 @@ fn main() -> ExitCode {
 }
 
 fn usage() -> ExitCode {
-    eprintln!("usage: render_wav <in.abc> <out.wav> [sample_rate, default 22050]");
+    eprintln!("usage: sonomorph-render <in.abc> <out.wav|out.s16> [sample_rate, default 22050]");
     ExitCode::from(2)
 }
 
@@ -63,4 +76,10 @@ fn write_wav(path: &str, rate: u32, samples: &[i16]) -> std::io::Result<()> {
         out.write_all(&sample.to_le_bytes())?;
     }
     out.flush()
+}
+
+/// The samples alone: signed 16-bit little-endian mono.
+fn write_raw(path: &str, samples: &[i16]) -> std::io::Result<()> {
+    let bytes: Vec<u8> = samples.iter().flat_map(|s| s.to_le_bytes()).collect();
+    std::fs::write(path, bytes)
 }

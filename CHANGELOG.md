@@ -45,7 +45,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html); in
   BRYX's renderer did (`tests/render.rs`). At extraction, all 56 of BRYX's
   cues and 15 probes were also compared sample for sample (71 identical),
   and the mu-law encoder over every 16-bit value (identical).
-- `examples/render_wav.rs` and `examples/play.rs`; `docs/chip8.md`.
+- `sonomorph-render` (with `render`): a score to WAV or raw 16-bit, the
+  interface of BRYX's old renderer tool; `examples/play.rs`;
+  `docs/chip8.md`.
 
 ### Changed
 

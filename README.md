@@ -111,10 +111,13 @@ if let Ok(audio) = &audio {
 [`docs/chip8.md`](docs/chip8.md) covers the mixer's commands, its
 configuration, and what each part guarantees.
 
-Two examples run the whole pipeline in one process:
+To hear a score without a game, `sonomorph-render` renders it to WAV (or
+to raw 16-bit, for a script that measures it), and the `play` example runs
+the whole pipeline in one process:
 
 ```sh
-cargo run --example render_wav --features render -- tests/probes/chord.abc chord.wav
+cargo install --git https://github.com/chussenot/sonomorph --features render sonomorph-render
+sonomorph-render tests/probes/chord.abc chord.wav
 cargo run --example play --features render,output -- tests/probes/chord.abc
 ```
 

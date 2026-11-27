@@ -57,8 +57,11 @@ required-features = ["render-advanced"]
 name = "studio_render"
 required-features = ["render-advanced"]
 
-[[example]]
-name = "render_wav"
+[[bin]]
+# A command-line renderer, to audition a score or measure it from a script.
+# Built only with `render`, so a game that depends on the library never
+# builds it.
+name = "sonomorph-render"
 required-features = ["render"]
 
 [[example]]
