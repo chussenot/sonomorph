@@ -33,3 +33,19 @@ optional = true
 # library the `render` feature links.
 version = "1.1"
 optional = true
+
+[[test]]
+name = "probes"
+required-features = ["render"]
+
+[[test]]
+name = "render"
+required-features = ["render"]
+
+[[example]]
+name = "render_wav"
+required-features = ["render"]
+
+[[example]]
+name = "play"
+required-features = ["render", "output"]
