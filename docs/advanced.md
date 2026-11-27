@@ -1,7 +1,8 @@
 # The advanced engine
 
 > In development, on the `advanced` branch. What is here renders and plays
-> BRYX's orchestral score byte for byte; its API may still change.
+> BRYX's orchestral score byte for byte (on one machine, against BRYX's own
+> renderer); its API may still change.
 
 The studio renders `.score` files: timed notes on named instruments (a
 sampled orchestra, an analog-style synth), through group buses, aux
@@ -13,7 +14,7 @@ play; effects go the chip8 way, as mono mu-law pitched by playback rate.
 
 | Step | Call | Output | Guarantee |
 |---|---|---|---|
-| Render (build time, `render-advanced`) | `advanced::render_score(path, rate)` | `Render`: float stereo | Deterministic: every voice's randomness comes from the score's `seed`. Reentrant: render on as many threads as there are scores. |
+| Render (build time, `render-advanced`) | `advanced::render_score(path, rate)` | `Render`: float stereo | Deterministic on a machine: every voice's randomness comes from the score's `seed`. Across machines the last bits of a float can differ (libm is chosen per CPU), so cache renders per machine, as a build's `OUT_DIR` does. Reentrant: render on as many threads as there are scores. |
 | Store music | `Render::to_qoa()` | QOA bytes | 16-bit TPDF dither from a fixed seed, then QOA (about 3.2 bits a sample). A loop's predictor is warmed on its own end, so the wrap does not click. |
 | Store an effect | `render_score(path, Some(44_100))`, `Render::to_s16()`, `advanced::fold_effect`, `chip8::mulaw::encode` | mu-law bytes at 22,050 Hz | Rendered at twice the effect rate, folded to mono behind a 63-tap anti-alias filter. |
 | Play (run time) | `advanced::Mixer`, `advanced::Output` (`output`) | interleaved `f32` frames | QOA decoded a slice at a time and resampled with a cubic. No allocation and no lock on the callback's path. |

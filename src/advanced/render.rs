@@ -151,7 +151,9 @@ impl Render {
 /// it says otherwise) when `rate` is `None`.
 ///
 /// Deterministic: the studio seeds every voice's randomness from the score,
-/// so the same score renders the same samples, on any thread.
+/// so the same score renders the same samples, on any thread, on a machine.
+/// Between machines the last bits can differ: the studio computes in float
+/// and calls libm, which glibc picks per CPU.
 ///
 /// # Errors
 ///

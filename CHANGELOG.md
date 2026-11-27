@@ -23,9 +23,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html); in
   - the advanced mixer (`Mixer`, `Sound`, `Clip`): QOA streamed and
     resampled with a cubic, mu-law effects, equal-power music crossfades;
     and its `Output`.
-- The studio probes and a golden render test; at extraction, BRYX's 39
-  scores, 17 effects and 8 probes rendered here byte for byte as there
-  (64 identical, on eight threads at once).
+- The studio probes and a golden render test (each probe's length and
+  quarter-second RMS within 0.1%: the studio's floats can differ in their
+  last bits between CPUs); at extraction, BRYX's 39 scores, 17 effects and
+  8 probes rendered here byte for byte as BRYX's renderer did on the same
+  machine (64 identical, on eight threads at once).
 - `sonomorph-render` renders a `.score` too (with `render-advanced`): to
   WAV, QOA, raw float or raw 16-bit, as BRYX's old tool did.
 - `tests/no_alloc.rs`: neither mixer allocates on the callback's path.

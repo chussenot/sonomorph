@@ -137,7 +137,7 @@ CI runs these on Linux. The tests:
 - the render contract (`tests/render.rs`), including the checksum of every
   probe as BRYX rendered it before the engine moved here;
 - the studio's probes and render contract (`tests/studio_probes.rs`,
-  `tests/studio_render.rs`), with the same golden checksums, and its C
+  `tests/studio_render.rs`), with golden fingerprints, and its C
   modules' own checks (`engine/advanced/tests/`, run by CI);
 - that neither mixer allocates on the callback's path (`tests/no_alloc.rs`);
 - the mixers, the codecs and the effect fold, as unit tests.

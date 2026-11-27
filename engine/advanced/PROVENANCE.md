@@ -7,11 +7,12 @@ single-header libraries it uses are vendored in `engine/vendor/`.
 
 It came to Sonomorph from BRYX commit
 `709ca61866330fd042bb732b6daa3c1d9a14cbaf`, with the changes below, each
-marked `SONOMORPH` in the source. `tests/studio_render.rs` holds the frame
-count and checksum of every studio probe as BRYX rendered it; at the move,
-all 39 of BRYX's scores (QOA), its 17 effects (16-bit) and the 8 probes
-(float) were also rendered here and compared byte for byte: 64 identical,
-rendered eight at a time on threads.
+marked `SONOMORPH` in the source. At the move, all 39 of BRYX's scores
+(QOA), its 17 effects (16-bit) and the 8 probes (float) were rendered here
+and by BRYX's renderer on the same machine and compared byte for byte: 64
+identical, rendered eight at a time on threads. `tests/studio_render.rs`
+keeps every probe's frame count and the RMS of each quarter second of it,
+as BRYX rendered it, within 0.1%.
 
 | File | Role |
 |---|---|
@@ -44,8 +45,12 @@ rendered eight at a time on threads.
 
 ## Rules
 
-- Deterministic: the same input renders the same bytes. Randomness only
-  from `st_rand` (a seeded xorshift), never `rand()` or time.
+- Deterministic: the same input renders the same bytes on a machine.
+  Randomness only from `st_rand` (a seeded xorshift), never `rand()` or
+  time. Across machines the last bits can differ: the studio computes in
+  float and calls libm, and glibc picks its implementations per CPU (one
+  probe renders a different checksum on GitHub's runners). That is why the
+  golden test compares fingerprints, not checksums.
 - Build-time only: allocation is fine in `*_init` and `*_load`, never per
   sample.
 - Frequencies and times in Hz and seconds, gains linear unless a name says
@@ -64,6 +69,6 @@ cc -std=c99 -O2 -Wall -Wextra -Werror -o t tests/test_sampler.c studio_sampler.c
 cargo test --all-features
 ```
 
-`tests/studio_render.rs` must still pass unchanged: if a checksum moves,
-every game's score sounds different, which needs a reason and a CHANGELOG
-entry, never a silently updated checksum. CI runs all of the above.
+`tests/studio_render.rs` must still pass unchanged: if a fingerprint
+moves, every game's score sounds different, which needs a reason and a
+CHANGELOG entry, never a silently updated table. CI runs all of the above.
