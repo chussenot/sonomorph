@@ -26,6 +26,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html); in
 - The studio probes and a golden render test; at extraction, BRYX's 39
   scores, 17 effects and 8 probes rendered here byte for byte as there
   (64 identical, on eight threads at once).
+- `sonomorph-render` renders a `.score` too (with `render-advanced`): to
+  WAV, QOA, raw float or raw 16-bit, as BRYX's old tool did.
 - `tests/no_alloc.rs`: neither mixer allocates on the callback's path.
 - `docs/advanced.md`: the `.score` language, the library, the pipeline.
 - `sonomorph::chip8`, extracted from BRYX (`chussenot/bryx` at
