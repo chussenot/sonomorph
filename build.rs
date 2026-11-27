@@ -1,5 +1,6 @@
 //! Builds the chip8 engine (`engine/chip8/`, see its PROVENANCE.md) into a
-//! static library, with the `render` feature only.
+//! static library, with the `render` feature only; `jam` and `midi` add
+//! their own source files to it.
 //!
 //! The flags are the ones BRYX built its renderer with (ISO C99, the POSIX
 //! feature macros, -O2), so a score renders to the same samples here as it
@@ -12,7 +13,7 @@ fn main() {
 
 #[cfg(feature = "render")]
 fn build_chip8() {
-    const SOURCES: &[&str] = &[
+    let mut sources = vec![
         "abc.c",
         "audio_dsp.c",
         "audio_engine.c",
@@ -20,14 +21,21 @@ fn build_chip8() {
         "audio_mix.c",
         "audio_seq.c",
         "audio_song_builtin.c",
+        "sonomorph_song.c",
     ];
+    if cfg!(feature = "jam") {
+        sources.push("audio_jam.c");
+    }
+    if cfg!(feature = "midi") {
+        sources.push("midi_export.c");
+    }
     println!("cargo:rerun-if-changed=engine/chip8");
 
     let dir = std::path::Path::new("engine/chip8");
     let mut build = cc::Build::new();
     build
         .include(dir)
-        .files(SOURCES.iter().map(|file| dir.join(file)))
+        .files(sources.iter().map(|file| dir.join(file)))
         // Whatever profile builds this crate (a build-dependency is
         // unoptimized by default), the engine renders at full speed.
         .opt_level(2)

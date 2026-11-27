@@ -14,19 +14,37 @@
 //!    looping music track, crossfaded on change. [`Output`] (`output`
 //!    feature) runs it on the default audio device.
 //!
+//! A program that works on scores rather than playing them (an editor, a
+//! tracker) also gets, with `render`, [`render_file_u8`] (the engine's own
+//! 8-bit output and its statistics) and [`Song`] (what a score declares);
+//! with `jam`, [`JamSession`] (endless seeded variations on a score); and
+//! with `midi`, [`export_midi`].
+//!
 //! What the engine understands, beyond standard ABC (held notes, dynamics,
 //! chords, drum synthesis, automation, reverb, seamless loops), is listed
 //! in `engine/chip8/PROVENANCE.md` and `docs/chip8.md`.
 
+#[cfg(feature = "jam")]
+mod jam;
+#[cfg(feature = "midi")]
+mod midi;
 mod mixer;
 pub mod mulaw;
 #[cfg(feature = "output")]
 mod output;
 #[cfg(feature = "render")]
 mod render;
+#[cfg(feature = "render")]
+pub mod song;
 
+#[cfg(feature = "jam")]
+pub use jam::{JamSection, JamSession, MAX_SECTION_SECONDS};
+#[cfg(feature = "midi")]
+pub use midi::{export_midi, MidiExportStats};
 pub use mixer::{pan_gains, Command, Mixer, MixerConfig, Sound};
 #[cfg(feature = "output")]
 pub use output::{Output, OutputError};
 #[cfg(feature = "render")]
-pub use render::{render_file, RenderError};
+pub use render::{render_file, render_file_u8, RenderError, RenderStats};
+#[cfg(feature = "render")]
+pub use song::Song;

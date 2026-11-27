@@ -111,3 +111,26 @@ under the effects, ducked to a quarter by a stinger, 1.2 s crossfades, and
 a `tanh` soft limiter after a master gain of 1.5. `Mixer` works without a
 device, so a game can test its own sound logic against it headless.
 `Mixer::voice_count` and `Mixer::music_track` report what is sounding.
+
+## Working on scores
+
+A game renders at build time and plays what it embedded. A program that
+works on scores, an editor or a tracker, renders at run time and reads the
+score itself; these calls are for it.
+
+| Call | Feature | Gives |
+|---|---|---|
+| `render_file_u8(path, rate)` | `render` | The engine's original output, unsigned 8-bit (128 is silence), and `RenderStats`: length, duration, range, peak, clipped samples, checksum, CPU time. The 16-bit mix is quantized once, with seeded triangular dither, so it is deterministic. |
+| `Song::load(path)` | `render` | What the score declares: title, tempo, swing, instruments, patterns, arrangement, FX buses and voices, each voice with its frequency on every step. Owned Rust values: nothing refers back to the engine. |
+| `JamSession::open(path, seed, seconds)` | `jam` | Sections of about `seconds` each (whole arrangement slots), each a variation of the one before: velocities humanized; sometimes the arrangement shuffled, a drum fill on the last bar, a voice muted in a pattern, the lead moved an octave. The same seed plays the same sections. |
+| `export_midi(score, out)` | `midi` | A format 1 Standard MIDI File: a conductor track with the tempo, then one track per voice. |
+
+`Song` reads the parser's song through small views Sonomorph owns
+(`engine/chip8/sonomorph_song.h`), never through the parser's own
+`AbcMusic`. That structure grows with the engine (BRYX's fork made it
+nineteen times larger than Electric Pulse's), and a program that mirrors
+its layout corrupts memory the day it changes; a unit test holds the
+views' sizes on both sides equal.
+
+Every call is reentrant: renders, loads, jam sections and exports can run
+on any threads at once (`tests/song.rs`, `tests/jam.rs`, `tests/midi.rs`).

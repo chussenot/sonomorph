@@ -18,6 +18,11 @@ default = []
 # `chip8::render_file`: the C engine, compiled by build.rs. Needs a C
 # compiler. Meant for a consumer's build-dependency.
 render = ["dep:cc"]
+# `chip8::JamSession`: endless seeded variations on a score, for a program
+# that plays a song on (an editor's "keep going").
+jam = ["render"]
+# `chip8::export_midi`: a score as a Standard MIDI File.
+midi = ["render"]
 # `chip8::Output`: the mixer on the default audio device, through cpal. On
 # Linux it needs the ALSA headers (libasound2-dev).
 output = ["dep:cpal"]
@@ -45,6 +50,22 @@ required-features = ["render"]
 [[test]]
 name = "docs"
 required-features = ["render"]
+
+[[test]]
+name = "song"
+required-features = ["render"]
+
+[[test]]
+name = "engine"
+required-features = ["render"]
+
+[[test]]
+name = "jam"
+required-features = ["jam"]
+
+[[test]]
+name = "midi"
+required-features = ["midi"]
 
 [[bin]]
 # A command-line renderer, to audition a score or measure it from a script.

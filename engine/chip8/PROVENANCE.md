@@ -34,8 +34,27 @@ then extracted here, under Sonomorph's MIT license.
 | `audio_dsp.[ch]` | Oscillators (square, pulse, triangle, noise), envelopes |
 | `audio_fx.[ch]` | FX buses: drive, low-pass, ladder, delay, sidechain |
 | `audio_song_builtin.[ch]` | Built-in menu song; only linked because `audio_engine.c` references it |
+| `audio_jam.[ch]` | Jam sessions: seeded variations on a song's arrangement (`jam` feature) |
+| `midi_export.[ch]` | A song as a Standard MIDI File (`midi` feature) |
+| `sonomorph_song.[ch]` | New here: a parsed song read through stable views (`chip8::Song`) |
 
-Not copied: the jam generator, MIDI export, the GUI, and the tools.
+The jam generator and the MIDI exporter came later, for Electric Pulse's
+editor to use the engine from here: copied from Electric Pulse at the same
+commit, `06c79fe`, which BRYX's fork leaves source-compatible (both only
+read the parser's and the sequencer's structures). One change each, marked
+`SONOMORPH`: BRYX's limits made `AbcMusic` and `SeqSong` hundreds of
+kilobytes to megabytes, so `audio_jam_session_render_next` and
+`midi_export_abc_file` allocate them on the heap instead of the stack (a
+Rust thread has 2 MB).
+
+Its engine tests came too (`tests/`: `test_audio_dsp.c`,
+`test_audio_seq.c`), marked `SONOMORPH` where they changed: their includes,
+the drive clamp's bound (moved up by `DSP_FRAC_BITS` with every knee in
+`audio_fx.c`), and the built-in song's checksums and first bytes, which
+BRYX's 16-bit mix changed by at most two 8-bit steps.
+
+Not copied: Electric Pulse's GUI, its command-line tools, and its parser
+test (`test_abc.c`), which checks Electric Pulse's own songs.
 
 ## What BRYX's fork changed
 
