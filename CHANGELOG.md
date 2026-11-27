@@ -11,8 +11,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html); in
 
 - `sonomorph::chip8`, extracted from BRYX (`chussenot/bryx` at
   `a995311`):
-  - the Electric Pulse engine as BRYX forked it (`engine/chip8/`,
-    unchanged), behind `render_file` and the `render` feature;
+  - the Electric Pulse engine as BRYX forked it (`engine/chip8/`),
+    behind `render_file` and the `render` feature, with one change:
+    `%%arrangement` is split without `strtok`, so renders on several
+    threads at once cannot cross (`tests/render.rs` holds it);
   - G.711 mu-law (`chip8::mulaw`), as BRYX stored its cues;
   - the mixer (`Mixer`, `Command`, `MixerConfig`), generic over a game's
     `Sound` instead of BRYX's own cue list, with BRYX's levels as its
