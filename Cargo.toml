@@ -42,6 +42,10 @@ required-features = ["render"]
 name = "render"
 required-features = ["render"]
 
+[[test]]
+name = "docs"
+required-features = ["render"]
+
 [[example]]
 name = "render_wav"
 required-features = ["render"]
