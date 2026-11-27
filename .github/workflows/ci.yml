@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      # cpal (the `output` feature) links ALSA on Linux. The C engine (the
+      # `render` feature) builds with the runner's gcc.
+      - name: ALSA headers
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      - name: cargo fmt --check
+        run: cargo fmt --check
+      # Each feature on its own, and none: a consumer enables one half
+      # without the other, so each must build alone.
+      - name: cargo clippy (no features)
+        run: cargo clippy --all-targets -- -D warnings
+      - name: cargo clippy (render)
+        run: cargo clippy --all-targets --features render -- -D warnings
+      - name: cargo clippy (output)
+        run: cargo clippy --all-targets --features output -- -D warnings
+      - name: cargo clippy (all features)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: cargo test
+        run: cargo test --all-features
+      - name: cargo doc
+        run: cargo doc --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.97"
+      - uses: Swatinem/rust-cache@v2
+      - name: ALSA headers
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
+      - name: cargo test (rust-version)
+        run: cargo test --all-features

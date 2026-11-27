@@ -1,0 +1,58 @@
+[package]
+name = "sonomorph"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.97"
+license = "MIT"
+description = "Game audio: a chiptune synthesis engine that renders ABC scores at build time, and the mixer that plays them"
+repository = "https://github.com/chussenot/sonomorph"
+readme = "README.md"
+keywords = ["audio", "chiptune", "synthesizer", "gamedev", "abc"]
+categories = ["multimedia::audio", "game-development"]
+
+[features]
+# Nothing by default: a consumer asks for the half it needs where it needs
+# it. Rendering belongs in a build script, playback in the program, and
+# neither should pull in the other's toolchain.
+default = []
+# `chip8::render_file`: the C engine, compiled by build.rs. Needs a C
+# compiler. Meant for a consumer's build-dependency.
+render = ["dep:cc"]
+# `chip8::Output`: the mixer on the default audio device, through cpal. On
+# Linux it needs the ALSA headers (libasound2-dev).
+output = ["dep:cpal"]
+
+[dependencies.cpal]
+# A thin, cross-platform device layer with no decoding or engine of its
+# own: one output stream whose callback runs the mixer.
+version = "0.17.3"
+optional = true
+
+[build-dependencies.cc]
+# Finds the platform's C compiler and builds the engine into a static
+# library the `render` feature links.
+version = "1.1"
+optional = true
+
+[[test]]
+name = "probes"
+required-features = ["render"]
+
+[[test]]
+name = "render"
+required-features = ["render"]
+
+[[test]]
+name = "docs"
+required-features = ["render"]
+
+[[bin]]
+# A command-line renderer, to audition a score or measure it from a script.
+# Built only with `render`, so a game that depends on the library never
+# builds it.
+name = "sonomorph-render"
+required-features = ["render"]
+
+[[example]]
+name = "play"
+required-features = ["render", "output"]
