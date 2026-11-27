@@ -18,9 +18,10 @@ Why this shape:
 - **No synthesis in the game.** The engine is C and runs once per build. The
   game carries samples and a small mixer: no C compiler, no engine and no
   audio decoding at run time.
-- **Deterministic.** The same score at the same rate always renders the same
-  samples, on any machine and any thread. A score is source code: diff it,
-  review it, rebuild it.
+- **Deterministic.** The same score at the same rate renders the same
+  samples every time, on any thread. chip8 mixes in fixed point, and its
+  probes render bit for bit alike on BRYX's machines and on CI's. A score
+  is source code: diff it, review it, rebuild it.
 - **Small.** Samples are stored as 8-bit mu-law, about 13 bits of range in
   one byte. BRYX's 33 music loops and 23 effects take 23 MB of its binary.
 
