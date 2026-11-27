@@ -70,6 +70,92 @@ fn a_render_is_the_same_on_every_thread() {
 }
 
 #[test]
+fn arrangements_parse_the_same_on_every_thread() {
+    // `%%arrangement` is split into names; the engine once did that with
+    // strtok, whose hidden pointer two threads would share. Many names,
+    // many renders at once: each must equal the render made alone.
+    let dir = std::env::temp_dir().join(format!("sonomorph-arr-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let score = dir.join("arrangement.abc");
+    let names: Vec<String> = (0..48).map(|i| format!("p{}", i % 4)).collect();
+    std::fs::write(
+        &score,
+        format!(
+            "X:1\nT:arrangement\nM:4/4\nL:1/16\nQ:1/4=120\nK:C\n\
+             %%pattern p0 length=16\n%%pattern p1 length=16\n\
+             %%pattern p2 length=16\n%%pattern p3 length=16\n\
+             %%arrangement {}\n\
+             %%instrument lead wave=square amp=30 attack=2 decay=60 sustain=60 release=80 gate=80 fx=0\n\
+             V:lead instrument=lead\n| C4 E4 G4 c4 |\n",
+            names.join(" ")
+        ),
+    )
+    .unwrap();
+    let alone = render_file(&score, RATE).unwrap();
+    for _ in 0..20 {
+        let renders: Vec<Vec<i16>> = std::thread::scope(|scope| {
+            let handles: Vec<_> = (0..8)
+                .map(|_| scope.spawn(|| render_file(&score, RATE).unwrap()))
+                .collect();
+            handles.into_iter().map(|h| h.join().unwrap()).collect()
+        });
+        assert!(
+            renders.iter().all(|r| *r == alone),
+            "a concurrent render differs"
+        );
+    }
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn the_engines_call_nothing_that_keeps_hidden_state() {
+    // The C a render runs must be reentrant: no libc call that keeps state
+    // between calls behind the caller's back. strtok was one, in both
+    // engines; this keeps it, and its kind, out.
+    const FORBIDDEN: &[&str] = &[
+        "strtok(",
+        "rand(",
+        "srand(",
+        "localtime(",
+        "gmtime(",
+        "asctime(",
+        "ctime(",
+        "strerror(",
+        "tmpnam(",
+        "setlocale(",
+    ];
+    let engine = concat!(env!("CARGO_MANIFEST_DIR"), "/engine");
+    let mut checked = 0;
+    for dir in std::fs::read_dir(engine).unwrap() {
+        let dir = dir.unwrap().path();
+        if !dir.is_dir() || dir.ends_with("vendor") {
+            continue;
+        }
+        for file in std::fs::read_dir(&dir).unwrap() {
+            let file = file.unwrap().path();
+            if file.extension().is_none_or(|e| e != "c") {
+                continue;
+            }
+            let text = std::fs::read_to_string(&file).unwrap();
+            for (n, line) in text.lines().enumerate() {
+                let code = line.split("//").next().unwrap_or("");
+                for call in FORBIDDEN {
+                    let hit = code.match_indices(call).any(|(i, _)| {
+                        // A whole identifier: not `st_rand(` or `my_strtok(`.
+                        i == 0
+                            || !code.as_bytes()[i - 1].is_ascii_alphanumeric()
+                                && code.as_bytes()[i - 1] != b'_'
+                    });
+                    assert!(!hit, "{}:{}: {call}", file.display(), n + 1);
+                }
+            }
+            checked += 1;
+        }
+    }
+    assert!(checked > 0);
+}
+
+#[test]
 fn the_rate_sets_the_length() {
     let half = render_file(probe_path("tempo"), 22_050).unwrap().len() as f64;
     let full = render_file(probe_path("tempo"), 44_100).unwrap().len() as f64;

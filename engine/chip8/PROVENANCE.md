@@ -10,8 +10,12 @@ and extended in BRYX, moved here so that more than one game can use it.
 forked them: the changes below fix how the engine renders, and add what its
 score needed. Every one of those changes is marked `BRYX` in the source.
 
-They came to Sonomorph **unchanged** from BRYX commit
-`a995311187fbc93553c23e155ac02bfea71b574b`. Sonomorph is now their home;
+They came to Sonomorph from BRYX commit
+`a995311187fbc93553c23e155ac02bfea71b574b` with one change, marked
+`SONOMORPH`: `%%arrangement` was split with `strtok`, whose hidden static
+pointer is shared by every thread. BRYX rendered each score in its own
+process; a library call renders on the caller's threads, so `abc.c` now
+splits with a local `next_token`, which cuts the same tokens. Sonomorph is now their home;
 BRYX consumes them through this crate. `tests/render.rs` holds the length
 and checksum of every probe as BRYX rendered it, so the move is checked,
 not assumed: the 56 cues of BRYX's score were also compared, sample for

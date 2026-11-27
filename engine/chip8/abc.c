@@ -535,6 +535,29 @@ static void parse_pattern_directive(AbcMusic *music, const char *val)
     music->pattern_count++;
 }
 
+/* SONOMORPH: strtok's splitting without its hidden static pointer, so two
+ * renders on two threads cannot cut each other's lines. Skips leading
+ * delimiters, ends the token with a NUL, and leaves *save after it. */
+static char *next_token(char **save, const char *delims)
+{
+    char *start = *save;
+    char *end;
+    if (!start) return NULL;
+    start += strspn(start, delims);
+    if (!*start) {
+        *save = NULL;
+        return NULL;
+    }
+    end = start + strcspn(start, delims);
+    if (*end) {
+        *end = 0;
+        *save = end + 1;
+    } else {
+        *save = NULL;
+    }
+    return start;
+}
+
 static void parse_arrangement_directive(AbcMusic *music, const char *val)
 {
     if (!music || !val) return;
@@ -546,12 +569,13 @@ static void parse_arrangement_directive(AbcMusic *music, const char *val)
     char buf[512];
     snprintf(buf, sizeof(buf), "%.*s", (int)(sizeof(buf) - 1), val);
     
-    char *token = strtok(buf, " \t");
+    char *rest = buf;
+    char *token = next_token(&rest, " \t");
     while (token && music->arrangement_length < ABC_MAX_ARRANGEMENT) {
         snprintf(music->arrangement[music->arrangement_length],
                  sizeof(music->arrangement[0]), "%s", token);
         music->arrangement_length++;
-        token = strtok(NULL, " \t");
+        token = next_token(&rest, " \t");
     }
 }
 
