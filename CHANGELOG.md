@@ -13,7 +13,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html); in
   orchestral-score branch (`709ca61`):
   - the studio (`engine/advanced/`), behind `render_score` and the
     `render-advanced` feature, made reentrant (its state moved from
-    statics to the heap) and given the `@library/` path prefix;
+    statics to the heap, its tokenizer off `strtok`) and given the
+    `@library/` path prefix;
   - the instrument library (`library/`): the desk, orchestra and synth
     palettes, and the curated VSCO 2 CE samples (CC0);
   - `Render::to_qoa` and `Render::to_s16`, BRYX's dither and seamless QOA

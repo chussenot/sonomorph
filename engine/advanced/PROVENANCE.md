@@ -32,6 +32,9 @@ rendered eight at a time on threads.
   a build script can render on several threads. Same sizes, same zeroed
   start, same arithmetic: the byte-for-byte comparison above was run
   eight renders at a time.
+- **No strtok.** The `.score` tokenizer split each line with `strtok`,
+  whose hidden static pointer every thread shares; it now splits with a
+  local `next_token` that cuts the same tokens.
 - **The library.** A path written `@library/...`, in an `include` or an
   `sfz=`, resolves against the instrument library's directory, which
   `st_render_score_lib` takes (Rust: `advanced::LIBRARY`). A score

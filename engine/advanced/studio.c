@@ -369,6 +369,29 @@ static void dir_of(const char *path, char *out, size_t n)
     out[len] = 0;
 }
 
+/* SONOMORPH: strtok's splitting without its hidden static pointer, so two
+ * renders on two threads cannot cut each other's lines. Skips leading
+ * delimiters, ends the token with a NUL, and leaves *save after it. */
+static char *next_token(char **save, const char *delims)
+{
+    char *start = *save;
+    char *end;
+    if (!start) return NULL;
+    start += strspn(start, delims);
+    if (!*start) {
+        *save = NULL;
+        return NULL;
+    }
+    end = start + strcspn(start, delims);
+    if (*end) {
+        *end = 0;
+        *save = end + 1;
+    } else {
+        *save = NULL;
+    }
+    return start;
+}
+
 /* SONOMORPH: a path written @library/... is the instrument library's,
  * wherever the file that names it lives. */
 #define LIBRARY_PREFIX "@library/"
@@ -421,7 +444,8 @@ static int parse_line(Score *s, const char *file, int ln, const char *dir, char 
             break;
         }
     }
-    for (char *t = strtok(line, " \t\r\n"); t && nt < 64; t = strtok(NULL, " \t\r\n"))
+    char *rest = line;
+    for (char *t = next_token(&rest, " \t\r\n"); t && nt < 64; t = next_token(&rest, " \t\r\n"))
         tok[nt++] = t;
     if (!nt) return 0;
     const char *cmd = tok[0];
