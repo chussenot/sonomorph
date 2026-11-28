@@ -37,13 +37,15 @@ mod render;
 #[cfg(feature = "render")]
 pub mod song;
 
+#[cfg(feature = "output")]
+pub use crate::device::OutputError;
 #[cfg(feature = "jam")]
 pub use jam::{JamSection, JamSession, MAX_SECTION_SECONDS};
 #[cfg(feature = "midi")]
 pub use midi::{export_midi, MidiExportStats};
 pub use mixer::{pan_gains, Command, Mixer, MixerConfig, Sound};
 #[cfg(feature = "output")]
-pub use output::{Output, OutputError};
+pub use output::Output;
 #[cfg(feature = "render")]
 pub use render::{render_file, render_file_u8, RenderError, RenderStats};
 #[cfg(feature = "render")]

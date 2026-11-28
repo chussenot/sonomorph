@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.97"
 license = "MIT"
-description = "Game audio: a chiptune synthesis engine that renders ABC scores at build time, and the mixer that plays them"
+description = "Game audio: synthesis engines that render scores at build time (chiptune ABC, an orchestral studio), and the mixers that play them"
 repository = "https://github.com/chussenot/sonomorph"
 readme = "README.md"
 keywords = ["audio", "chiptune", "synthesizer", "gamedev", "abc"]
@@ -18,6 +18,9 @@ default = []
 # `chip8::render_file`: the C engine, compiled by build.rs. Needs a C
 # compiler. Meant for a consumer's build-dependency.
 render = ["dep:cc"]
+# `advanced::render_score`: the studio (and its FLAC and QOA codecs),
+# compiled by build.rs. Needs a C compiler. Meant for a build-dependency.
+render-advanced = ["dep:cc"]
 # `chip8::JamSession`: endless seeded variations on a score, for a program
 # that plays a song on (an editor's "keep going").
 jam = ["render"]
@@ -50,6 +53,14 @@ required-features = ["render"]
 [[test]]
 name = "docs"
 required-features = ["render"]
+
+[[test]]
+name = "studio_probes"
+required-features = ["render-advanced"]
+
+[[test]]
+name = "studio_render"
+required-features = ["render-advanced"]
 
 [[test]]
 name = "song"

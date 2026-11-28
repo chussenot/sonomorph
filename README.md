@@ -33,12 +33,14 @@ brick-breaker, whose score and effects it renders.
 | Module | Sound | Status |
 |---|---|---|
 | `sonomorph::chip8` | 8-bit-style synthesis: square, pulse, triangle and noise voices, FX buses, a small reverb, from ABC notation | This branch (`main`) |
-| `sonomorph::advanced` | Orchestral rendering: sampled instruments, synth layers, a studio effects chain, streamed music | The `advanced` branch, in development |
+| `sonomorph::advanced` | Orchestral rendering: a sampled orchestra (VSCO 2 CE, CC0) and an analog-style synth through buses, reverbs and a limiter, from `.score` files; music stored as QOA and streamed | This branch (`advanced`), in development |
 
 The chip8 engine is the Electric Pulse engine as BRYX forked it. Its ABC
 dialect goes past standard ABC with held notes, dynamics, chords, drum
 synthesis, automation, reverb and seamless loops, listed in
-[`docs/chip8.md`](docs/chip8.md).
+[`docs/chip8.md`](docs/chip8.md). The advanced engine's studio, its
+`.score` language and its instrument library are in
+[`docs/advanced.md`](docs/advanced.md).
 
 ## Features
 
@@ -47,10 +49,11 @@ Nothing is on by default. Ask for each half where it is needed:
 | Feature | Adds | Needs | Where |
 |---|---|---|---|
 | `render` | `chip8::render_file` and the C engine; for a tool that works on scores, `render_file_u8` (8-bit, with statistics) and `chip8::Song` (what a score declares) | a C compiler | `[build-dependencies]` |
+| `render-advanced` | `advanced::render_score`, the studio and its library | a C compiler | `[build-dependencies]` |
 | `jam` | `chip8::JamSession`: endless seeded variations on a score | as `render` | where the variations play |
 | `midi` | `chip8::export_midi`: a score as a Standard MIDI File | as `render` | where the export runs |
-| `output` | `chip8::Output`: the mixer on the default audio device | ALSA headers on Linux (`libasound2-dev`) | `[dependencies]` |
-| (always) | `chip8::Mixer`, `chip8::Sound`, `chip8::mulaw` | nothing | either |
+| `output` | `chip8::Output`, `advanced::Output`: a mixer on the default audio device | ALSA headers on Linux (`libasound2-dev`) | `[dependencies]` |
+| (always) | `chip8::Mixer`, `chip8::Sound`, `chip8::mulaw`, `advanced::Mixer`, `advanced::qoa`, `advanced::fold_effect` | nothing | either |
 
 With Cargo's feature resolver (edition 2021 and later), the build
 dependency's `render` never reaches the game binary.
@@ -140,13 +143,22 @@ CI runs these on Linux. The tests:
   `SONOMORPH_C_SANITIZE=1` adds ASan and UBSan, as CI does);
 - what an editor reads and plays (`tests/song.rs`, `tests/jam.rs`,
   `tests/midi.rs`);
-- the mixer and the codec, as unit tests.
+- the studio's probes and render contract (`tests/studio_probes.rs`,
+  `tests/studio_render.rs`), with golden fingerprints, and its C
+  modules' own checks (`engine/advanced/tests/`, run by CI);
+- that neither mixer allocates on the callback's path (`tests/no_alloc.rs`);
+- the mixers, the codecs and the effect fold, as unit tests.
 
-Changes to the engine follow `engine/chip8/PROVENANCE.md`, "Changing it":
+Changes to an engine follow its `PROVENANCE.md`, "Changing it":
 mark them, keep them opt-in, never update a checksum to make a test pass.
 Commits follow [Conventional Commits](https://www.conventionalcommits.org).
 
 ## License
 
-MIT, see [LICENSE](LICENSE). The engine's history is in
-[`engine/chip8/PROVENANCE.md`](engine/chip8/PROVENANCE.md).
+MIT, see [LICENSE](LICENSE). The engines' history is in
+[`engine/chip8/PROVENANCE.md`](engine/chip8/PROVENANCE.md) and
+[`engine/advanced/PROVENANCE.md`](engine/advanced/PROVENANCE.md). The
+orchestral samples are CC0 and the vendored C headers MIT and public
+domain: see [`library/README.md`](library/README.md) and
+[`engine/vendor/README.md`](engine/vendor/README.md). With the samples, this
+branch is too large for crates.io; depend on it by git.
