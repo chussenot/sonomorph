@@ -1,0 +1,24 @@
+X:1
+T:Arranged
+M:4/4
+L:1/16
+Q:1/4=120
+K:C
+% A score that uses what an editor reads back (Song), what a jam session
+% varies (an arrangement of patterns, a kick, a lead) and what a MIDI export
+% writes: tests/song.rs, tests/jam.rs and tests/midi.rs read it.
+%%swing 56
+%%instrument kick wave=noise amp=60 attack=0 decay=9 sustain=8 release=12 gate=24 fx=0
+%%instrument lead wave=pulse amp=40 duty=25 attack=2 decay=60 sustain=60 release=80 gate=80 vibrato=10 glide=6 fx=1
+%%effect 0 drive=30 lowpass=20 sidechain=50 sidechain_release=150 mix=90
+%%effect 1 delay_steps=4 delay_feedback=40 delay_mix=30 mix=70
+%%pattern A length=16
+%%pattern B length=16
+%%pattern C length=16
+%%arrangement A B A C
+V:kick instrument=kick
+V:lead instrument=lead
+V:kick
+| c2 z6 c2 z6 | c2 z6 c2 z6 | c2 z2 c2 z2 c2 z2 c2 c2 |
+V:lead
+| C4 E4 G4 c4 | A4 G4 E4 D4 | C2 D2 E2 G2 A2 G2 E2 C2 |

@@ -32,10 +32,17 @@ jobs:
         run: cargo clippy --all-targets --features output -- -D warnings
       - name: cargo clippy (render-advanced)
         run: cargo clippy --all-targets --features render-advanced -- -D warnings
+      - name: cargo clippy (jam)
+        run: cargo clippy --all-targets --features jam -- -D warnings
+      - name: cargo clippy (midi)
+        run: cargo clippy --all-targets --features midi -- -D warnings
       - name: cargo clippy (all features)
         run: cargo clippy --all-targets --all-features -- -D warnings
       - name: cargo test
         run: cargo test --all-features
+        env:
+          # The engine's C tests (tests/engine.rs) under ASan and UBSan.
+          SONOMORPH_C_SANITIZE: "1"
       # The studio's C modules have their own checks (PROVENANCE.md).
       - name: studio C tests
         working-directory: engine/advanced

@@ -48,10 +48,12 @@ Nothing is on by default. Ask for each half where it is needed:
 
 | Feature | Adds | Needs | Where |
 |---|---|---|---|
-| `render` | `chip8::render_file` and the C engine | a C compiler | `[build-dependencies]` |
+| `render` | `chip8::render_file` and the C engine; for a tool that works on scores, `render_file_u8` (8-bit, with statistics) and `chip8::Song` (what a score declares) | a C compiler | `[build-dependencies]` |
 | `render-advanced` | `advanced::render_score`, the studio and its library | a C compiler | `[build-dependencies]` |
+| `jam` | `chip8::JamSession`: endless seeded variations on a score | as `render` | where the variations play |
+| `midi` | `chip8::export_midi`: a score as a Standard MIDI File | as `render` | where the export runs |
 | `output` | `chip8::Output`, `advanced::Output`: a mixer on the default audio device | ALSA headers on Linux (`libasound2-dev`) | `[dependencies]` |
-| (always) | `chip8::Mixer`, `chip8::mulaw`, `advanced::Mixer`, `advanced::qoa`, `advanced::fold_effect` | nothing | either |
+| (always) | `chip8::Mixer`, `chip8::Sound`, `chip8::mulaw`, `advanced::Mixer`, `advanced::qoa`, `advanced::fold_effect` | nothing | either |
 
 With Cargo's feature resolver (edition 2021 and later), the build
 dependency's `render` never reaches the game binary.
@@ -137,6 +139,10 @@ CI runs these on Linux. The tests:
   measured on what it renders;
 - the render contract (`tests/render.rs`), including the checksum of every
   probe as BRYX rendered it before the engine moved here;
+- the engine's own C tests (`engine/chip8/tests/`, run by `tests/engine.rs`;
+  `SONOMORPH_C_SANITIZE=1` adds ASan and UBSan, as CI does);
+- what an editor reads and plays (`tests/song.rs`, `tests/jam.rs`,
+  `tests/midi.rs`);
 - the studio's probes and render contract (`tests/studio_probes.rs`,
   `tests/studio_render.rs`), with golden fingerprints, and its C
   modules' own checks (`engine/advanced/tests/`, run by CI);

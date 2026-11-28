@@ -21,6 +21,11 @@ render = ["dep:cc"]
 # `advanced::render_score`: the studio (and its FLAC and QOA codecs),
 # compiled by build.rs. Needs a C compiler. Meant for a build-dependency.
 render-advanced = ["dep:cc"]
+# `chip8::JamSession`: endless seeded variations on a score, for a program
+# that plays a song on (an editor's "keep going").
+jam = ["render"]
+# `chip8::export_midi`: a score as a Standard MIDI File.
+midi = ["render"]
 # `chip8::Output`: the mixer on the default audio device, through cpal. On
 # Linux it needs the ALSA headers (libasound2-dev).
 output = ["dep:cpal"]
@@ -56,6 +61,22 @@ required-features = ["render-advanced"]
 [[test]]
 name = "studio_render"
 required-features = ["render-advanced"]
+
+[[test]]
+name = "song"
+required-features = ["render"]
+
+[[test]]
+name = "engine"
+required-features = ["render"]
+
+[[test]]
+name = "jam"
+required-features = ["jam"]
+
+[[test]]
+name = "midi"
+required-features = ["midi"]
 
 [[bin]]
 # A command-line renderer, to audition a score or measure it from a script.
